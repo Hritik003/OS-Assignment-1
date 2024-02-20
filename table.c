@@ -27,7 +27,7 @@ void display_menu(){
     fclose(fptr);
 }
 
-void create_child_process(int i){
+void customer_order(int i){
         if(pipe(pipe_handler[i])==-1){
             perror("Error in creating the pipe");
             exit(1);
@@ -39,8 +39,10 @@ void create_child_process(int i){
         if(pid == 0){
             //child process
             int order_num;
+            printf("table pid is: %d\n",getppid());
             printf("Enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done: \n");
             while(scanf("%d",&order_num)&&order_num!=-1){
+                if(order_num<0 || order_num>4)printf("Please enter a valid order\n");
                 close(pipe_handler[i][READ_END]);
                 write(pipe_handler[i][WRITE_END],&order_num,sizeof(order_num));
             }
@@ -98,7 +100,7 @@ int main(){
     // }
 
     for(int i=0;i<num_of_customers;i++){
-        create_child_process(i);
+        customer_order(i);
         wait(NULL);
     }
 }
