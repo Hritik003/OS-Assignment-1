@@ -11,7 +11,8 @@
 #define MAX_CUSTOMERS 5
 
 void display_menu(){
-    printf("Menu: \n");
+    printf("<-------------------------------Menu--------------------------------->\n");
+    printf(" \n");
     FILE *fptr;
     fptr = fopen("menu.txt","r");
     if (!fptr) {
@@ -20,9 +21,10 @@ void display_menu(){
     }
     char cuisine[100];
     while (fgets(cuisine, 100, fptr) != NULL) {
-        printf("%s", cuisine);
+        printf("%s\n", cuisine);
     }
     fclose(fptr);
+    printf("<---------------------------------------------------------------->\n");
 }
 
 void customer_order(int pipe_handler[], int customer_id){
@@ -65,34 +67,50 @@ int main(){
             exit(1);
         }
 
-        //creating customer processes and seperate pipe for customer and table process
+
+        display_menu();
 
         for(int i=0;i<num_of_customers;i++){
             if(pipe(pipe_handler[i]) == -1){
                 perror("Error in creating the pipe");
                 exit(1);
             }
-
-
-            //creating a process
             pid_t pid = fork();
-
             if(pid == 0){
-                //customer process will order 
-                display_menu();
-                customer_order(pipe_handler[i], i + 1);//i+1 is the customer id
+                printf("customer %d pid is: %d\n",i+1,getpid());
+                printf("table pid is: %d\n",getppid());
+                customer_order(pipe_handler[i], i + 1);
             }
             else if(pid > 0){
-                //parent process
                 customer_pids[i]=pid;
+                close(pipe_handler[i][WRITE_END]); 
                 // printf("this is parent");
-
-
             }
             else{
                 perror("Error in forking a process for the customer");
             }
+            wait(NULL);
 
+        }
+
+
+
+        for (int i=0; i<num_of_customers; i++) {
+            int status;
+            waitpid(customer_pids[i], &status, 0);
+            int order_num;
+            int check= 0;
+            printf("\n Order recieved from Customer %d: ", i + 1);
+
+            while (read(pipe_handler[i][READ_END], &order_num, sizeof(order_num)) > 0 ) {
+                if(order_num!=-1){
+                    printf("%d ", order_num);
+                    check = 1;
+                }
+            }
+            if(!check) printf("No order recieved from customer %d",i+1);
+            printf("\n");
+            close(pipe_handler[i][READ_END]);
         }
 
 
