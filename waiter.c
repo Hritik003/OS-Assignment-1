@@ -10,5 +10,7 @@ int main(){
     int waiter_id;
     printf("Enter Waiter ID:");
     scanf("%d",&waiter_id);
-    
+
+
+    //shm segment
 }
