@@ -6,9 +6,12 @@
 #include <sys/ipc.h>
 #include <string.h>
 
+
+
 #define READ_END 0
 #define WRITE_END 1
 #define MAX_CUSTOMERS 5
+#define SHM_SIZE 1024
 
 void display_menu(){
     printf("<-------------------------------Menu--------------------------------->\n");
@@ -51,6 +54,28 @@ int main(){
     int table_number;
     printf("Enter Table Number:");
     scanf("%d",&table_number);
+
+    //shared memory
+    key_t key = ftok("table.c",table_number);
+    if(key==-1){
+        printf("error in ftok");
+        return 1;
+    }
+
+    int shmid;
+    int *shmptr;
+    
+    shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
+     if (shmid<0) {
+        perror("shmget");
+        exit(1);
+    }
+
+    shmptr = shmat(shmid, NULL, 0);
+    if (shmptr== (int *)(-1)) {
+        perror("shmat");
+        exit(1);
+    }
 
     int pipe_handler[MAX_CUSTOMERS][2];
     int customer_pids[MAX_CUSTOMERS];
@@ -114,6 +139,12 @@ int main(){
         }
 
 
+        sprintf((char *)shmptr, "Orders for Table %d:received", table_number);
+
+
+        printf("<---------------------------------------------------------->");
+        printf("Waiting for the bill from the waiter...\n");
+        while (((char *)shmptr)[0]=='\0'||strstr((char *)shmptr, "Bill")==NULL)sleep(1);
     // }
 
 
