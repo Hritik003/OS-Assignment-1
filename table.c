@@ -12,6 +12,14 @@
 #define WRITE_END 1
 #define MAX_CUSTOMERS 5
 #define SHM_SIZE 1024
+#define MAX_ORDERS 10
+
+struct customer_data{
+    int customer_id;
+    int orders[MAX_ORDERS];
+    int num_orders;
+};
+struct customer_data orders[MAX_CUSTOMERS];
 
 void display_menu(){
     printf("<-------------------------------Menu--------------------------------->\n");
@@ -30,12 +38,13 @@ void display_menu(){
     printf("<---------------------------------------------------------------->\n");
 }
 
-void customer_order(int pipe_handler[], int customer_id){
+void customer_order(int pipe_handler[], int customer_id,struct customer_data *orders){
     //customer closes the read end
     close(pipe_handler[READ_END]);
 
     //taking order from the customer
     int order_num;
+    int count_of_orders=0;
     printf("Customer %d, enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done:\n", customer_id);
     
     while(1){
@@ -43,7 +52,13 @@ void customer_order(int pipe_handler[], int customer_id){
         write(pipe_handler[WRITE_END], &order_num, sizeof(order_num));
 
         if (order_num == -1) break;
+        else {
+            orders->orders[count_of_orders]=order_num;
+            count_of_orders=count_of_orders+1;
+        }
     }
+
+    orders[customer_id].num_orders=count_of_orders;
 
     //customer closes the write end
     close(pipe_handler[WRITE_END]);
@@ -95,7 +110,12 @@ int main(){
 
         display_menu();
 
+        //creating a structured data for customer order details
+        
+
         for(int i=0;i<num_of_customers;i++){
+            
+
             if(pipe(pipe_handler[i]) == -1){
                 perror("Error in creating the pipe");
                 exit(1);
@@ -104,7 +124,8 @@ int main(){
             if(pid == 0){
                 printf("customer %d pid is: %d\n",i+1,getpid());
                 printf("table pid is: %d\n",getppid());
-                customer_order(pipe_handler[i], i + 1);
+                orders[i].customer_id=i+1;
+                customer_order(pipe_handler[i], i + 1,&orders[i]);
             }
             else if(pid > 0){
                 customer_pids[i]=pid;
@@ -139,7 +160,8 @@ int main(){
         }
 
 
-        sprintf((char *)shmptr, "Orders for Table %d:received", table_number);
+        memcpy(shmptr,orders,sizeof(struct customer_data)*MAX_CUSTOMERS);
+        printf("MESSAGE STORED\n");
 
 
         printf("<---------------------------------------------------------->");
