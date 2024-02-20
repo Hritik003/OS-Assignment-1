@@ -71,7 +71,7 @@ int main(){
     scanf("%d",&table_number);
 
     //shared memory
-    key_t key = ftok("table.c",table_number);
+    key_t key = ftok("table.c",'T');
     if(key==-1){
         printf("error in ftok");
         return 1;
