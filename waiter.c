@@ -70,7 +70,7 @@ int main(){
     scanf("%d",&waiter_id);
 
     //shm segment
-    key_t key = ftok("table_test.c",waiter_id);
+    key_t key = ftok("table.c",waiter_id);
     if(key==-1){
         printf("error in ftok");
         return 1;

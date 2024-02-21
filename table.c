@@ -133,7 +133,7 @@ int main(){
     display_menu();
 
     // ftok to generate unique key for shared memory
-    key_t key=ftok("table_test.c",table_number);
+    key_t key=ftok("table.c",table_number);
     if(key==-1){
         printf("error in ftok\n");
         return 1;
