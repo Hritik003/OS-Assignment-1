@@ -55,10 +55,7 @@ int main(){
 
 
 while (1) {
-
-
-
-    if (shmptr[0]==9999) {
+    if (shmptr[19]==9999) {
         printf("Processing orders...\n");
         int bill=0;
         int i=1;
@@ -92,11 +89,18 @@ while (1) {
             printf("Invalid orders detected, bill not calculated.\n");
             shmptr[0]=-404; 
         }
-        shmptr[19]=0;
-        break;
+        shmptr[19]=8000;
+        
+        
+
+        
     }
                 
         sleep(1);
+        //  shmptr[0]=8888;
+        if(shmptr[0]==500){
+            exit(1);
+        }
     }
 
     if (shmdt(shmptr)==-1) {

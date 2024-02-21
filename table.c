@@ -99,8 +99,8 @@ int main(){
         int num_of_customers;
         printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
         scanf("%d",&num_of_customers);
-        shmptr[0]=8888;
-        shmptr[1]=num_of_customers;
+        shmptr[19]=8888;
+        shmptr[0]=num_of_customers;
 
         if(num_of_customers==-1){
             perror("exitting since the number of customers entered is -1");
@@ -136,7 +136,7 @@ int main(){
 
         }
 
-        int j=2;
+        int j=1;
         for (int i=0; i<num_of_customers; i++) {
             int status;
             waitpid(customer_pids[i], &status, 0);
@@ -161,7 +161,7 @@ int main(){
             printf("\n");
             close(pipe_handler[i][READ_END]);
         }
-        shmptr[0]=9999;
+        shmptr[19]=9999;
         
 
         for(int i=0;i<20;i++){
@@ -183,7 +183,7 @@ int main(){
             key = ftok("hotelmanager.c",table_number);
             shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
             if(shmid<0){
-                perror("errorin shmget");
+                perror("error in shmget");
                 continue;
             }
 
@@ -212,7 +212,7 @@ int main(){
         
         }
         else{
-            printf("wrong order number placed");
+            printf("wrong order number placed \n");
             //take orders again
 
 
