@@ -26,21 +26,20 @@ int compute_bill(int *orders){
         switch (orders[i])
         {
             case 1:
-                bill+=30;break;
+                bill+=30;printf("Bill is getting computed order by order %d...\n",bill);break;
             
             case 2:
-                bill+=40;break;
+                bill+=40;printf("Bill is getting computed order by order %d...\n",bill);break;
 
             case 3:
-                bill+=25;break;
+                bill+=25;printf("Bill is getting computed order by order %d...\n",bill);break;
             
             case 4:
-                bill+=30;break;
+                bill+=30;printf("Bill is getting computed order by order %d...\n",bill);break;
             
             default:{orders[2]=0;return -404;}
         }
-        // printf("Bill is getting computed order by order %d...\n",bill);
-        sleep(1);
+        // sleep(1);
     }
     return bill;
 }
