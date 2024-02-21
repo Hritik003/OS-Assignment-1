@@ -94,6 +94,8 @@ int main(){
     int pipe_handler[MAX_CUSTOMERS][2];
     int customer_pids[MAX_CUSTOMERS];
 
+    while(1){
+
     int num_of_customers;
     printf("Enter Number of Customers at Table (maximum no. of customers can be 5):");
     scanf("%d",&num_of_customers);
@@ -170,9 +172,27 @@ int main(){
     sleep(20);
     printf("<---------------------------------------------------------->");
     printf("Waiting for the bill from the waiter...\n");
-    if(shmptr[0]!= -404)printf("The bill amount is: %d",shmptr[0]);
-    else {
-        // take order from customer again
+    if(shmptr[0]!= -404){
+        printf("The bill amount is: %d\n",shmptr[0]);
+        printf("\n");
+        printf("<------------------order done-------------------->");
+        printf("\n");
+        printf("Do you wish to allot customers again?: ");
+        int answer;
+        scanf("%d",&answer);
+        if(answer==1){
+            continue;
+        }
+        else{
+            exit(1);
+        }
+    
+    }
+    else{
+        printf("wrong order number placed");
+        //take orders again
+
+    }
     }
 
 
