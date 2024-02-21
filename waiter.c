@@ -13,7 +13,8 @@
 #define MAX_ORDERS 10
 
 void print_customer_orders(int *orders){
-    for(int i=2;i<orders[1]+2;i++){
+    printf("The orders are: ");
+    for(int i=3;i<orders[1]+3;i++){
         printf("%d ",orders[i]);
     }
     printf("\n");
@@ -21,29 +22,46 @@ void print_customer_orders(int *orders){
 
 int compute_bill(int *orders){
     int bill=0;
-    for(int i=2;i<orders[1]+2;i++){
+    for(int i=3;i<orders[1]+3;i++){
         switch (orders[i])
         {
             case 1:
-                bill+=30;
-                break;
+                bill+=30;break;
             
             case 2:
-                bill+=40;
-                break;
+                bill+=40;break;
 
             case 3:
-                bill+=25;
-                break;
+                bill+=25;break;
             
             case 4:
-                bill+=30;
-                break;
+                bill+=30;break;
             
-            default:{return -404;}
+            default:{orders[2]=0;return -404;}
         }
+        // printf("Bill is getting computed order by order %d...\n",bill);
+        sleep(1);
     }
     return bill;
+}
+
+void waiter_table_process(int *shmptr,int waiter_id,int num_of_customers){
+    int total_bill=compute_bill(shmptr);
+    if(total_bill==-404){
+        printf("Invalid Order! Please enter again.\n");
+        while(shmptr[2]==0){
+            
+        }
+        shmptr[0]=num_of_customers;
+        waiter_table_process(shmptr,waiter_id,num_of_customers);
+    }
+
+    if(total_bill!=-404){
+        shmptr[0]=total_bill;
+        printf("The total bill amount for table %d is %d INR.\n",waiter_id,total_bill);
+        
+        print_customer_orders(shmptr);
+    }
 }
 
 int main(){
@@ -52,7 +70,7 @@ int main(){
     scanf("%d",&waiter_id);
 
     //shm segment
-    key_t key = ftok("table.c",waiter_id);
+    key_t key = ftok("table_test.c",waiter_id);
     if(key==-1){
         printf("error in ftok");
         return 1;
@@ -73,15 +91,12 @@ int main(){
         exit(1);
     }
 
-    int total_bill=compute_bill(shmptr);
-    shmptr[0]=total_bill;
-    printf("The total bill amount for table %d is %d INR.\n",waiter_id,total_bill);
+    printf("Waiting for the order...\n");
+    while(shmptr[2]==0){}
+    waiter_table_process(shmptr,waiter_id,shmptr[0]);
+    
+    shmdt(shmptr);
+    shmctl(shmid,IPC_RMID,NULL);
 
-    print_customer_orders(shmptr);
-
-    if (shmdt(shmptr) == -1) {
-        perror("error in detaching");
-        exit(1);
-    }
-
+    return 0;
 }
