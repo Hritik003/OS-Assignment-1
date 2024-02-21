@@ -160,9 +160,12 @@ int main(){
         }
         if(!check) printf("No order recieved from customer %d",i+1);
         shmptr[j++]=-1;
+        
         printf("\n");
         close(pipe_handler[i][READ_END]);
     }
+    shmptr[19]=9999;
+    
 
     for(int i=0;i<20;i++){
         printf("%d ",shmptr[i]);
@@ -170,11 +173,32 @@ int main(){
 
     printf("MESSAGE STORED\n");
     sleep(20);
-    printf("<---------------------------------------------------------->");
+    printf("<---------------------------------------------------------->\n");
     printf("Waiting for the bill from the waiter...\n");
     if(shmptr[0]!= -404){
         printf("The bill amount is: %d\n",shmptr[0]);
         printf("\n");
+
+        int *earnings;
+        key_t key;
+        int shmid;
+
+        key = ftok("hotelmanager.c",table_number);
+        shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
+        if(shmid<0){
+            perror("errorin shmget");
+            continue;
+        }
+
+        earnings = (int *)shmat(shmid,NULL,0);
+        if (earnings==(int *)(-1)) {
+            perror("shmat");
+            continue;
+        }
+
+        earnings[0] = shmptr[0];
+
+
         printf("<------------------order done-------------------->");
         printf("\n");
         printf("Do you wish to allot customers again?: ");
@@ -184,6 +208,8 @@ int main(){
             continue;
         }
         else{
+            shmptr[0]=500;
+            printf("table terminated since there are no customers");
             exit(1);
         }
     
@@ -191,6 +217,7 @@ int main(){
     else{
         printf("wrong order number placed");
         //take orders again
+
 
     }
     }

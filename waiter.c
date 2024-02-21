@@ -25,7 +25,7 @@ struct customer_data orders[MAX_CUSTOMERS];
 
 int main(){
     int waiter_id;
-    printf("Enter Waiter ID 12:");
+    printf("Enter Waiter ID:");
     scanf("%d",&waiter_id);
 
     //printf("Check 0");
@@ -52,45 +52,56 @@ int main(){
         perror("shmat");
         exit(1);
     }
- 
-    int num_of_customers = shmptr[0];
-    int valid=200;
-    int bill=0;
 
-    int i=1;
-    while(num_of_customers!=0){
-        if(shmptr[i]==(-1)){
-            num_of_customers--;
-            continue;
+
+    while(1){
+        if(shmptr[19]!=9999)continue;    
+    
+        int num_of_customers = shmptr[0];
+        int valid=200;
+        int bill=0;
+
+        int i=1;
+        while(num_of_customers!=0){
+            if(shmptr[i]==(-1)){
+                num_of_customers--;
+                continue;
+            }
+            else if(shmptr[i]<1 || shmptr[i]>4){
+                valid=-404;
+                break;
+            }
+            else{
+                if(shmptr[i]==1)bill+=30;
+                else if(shmptr[i]==2)bill+=40;
+                else if(shmptr[i]==3)bill+=25;
+                else bill+=30;
+            }
+
+            i++;
         }
-        else if(shmptr[i]<1 || shmptr[i]>4){
-            valid=-404;
-            break;
+
+        memset(shmptr,0,SHM_SIZE);
+
+        if(valid == -404){
+            printf("invalid order placed by the customer");
+            shmptr[0]=valid;
         }
         else{
-            if(shmptr[i]==1)bill+=30;
-            else if(shmptr[i]==2)bill+=40;
-            else if(shmptr[i]==3)bill+=25;
-            else bill+=30;
+            printf("bill amount sent :%d",bill);
+            shmptr[0]=bill;
         }
 
-        i++;
+        sleep(20);
+        if(shmptr[0]==500){
+            printf("waiter terminated due to no customers");
+            exit(1);
+        }
+                
+        if (shmdt(shmptr) == -1) {
+            perror("error in detaching");
+            exit(1);
+        } 
     }
-
-    memset(shmptr,0,SHM_SIZE);
-
-    if(valid == -404){
-        printf("invalid order placed by the customer");
-        shmptr[0]=valid;
-    }
-    else{
-        printf("bill amount sent :%d",bill);
-        shmptr[0]=bill;
-    }
-            
-    if (shmdt(shmptr) == -1) {
-        perror("error in detaching");
-        exit(1);
-    } 
 
 }
