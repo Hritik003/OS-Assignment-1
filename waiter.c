@@ -54,54 +54,54 @@ int main(){
     }
 
 
-    while(1){
-        if(shmptr[19]!=9999)continue;    
-    
-        int num_of_customers = shmptr[0];
-        int valid=200;
+while (1) {
+
+
+
+    if (shmptr[0]==9999) {
+        printf("Processing orders...\n");
         int bill=0;
-
         int i=1;
-        while(num_of_customers!=0){
-            if(shmptr[i]==(-1)){
-                num_of_customers--;
-                continue;
+        while (shmptr[i]!=-1) { 
+            switch (shmptr[i]) {
+                case 1:
+                    bill+=30;
+                    break;
+                case 2:
+                    bill+=40;
+                    break;
+                case 3:
+                    bill+=25;
+                    break;
+                case 4:
+                    bill+=30; 
+                    break;
+                default:
+                    printf("Invalid order number: %d\n", shmptr[i]);
+                    bill=-1; 
+                    break;
             }
-            else if(shmptr[i]<1 || shmptr[i]>4){
-                valid=-404;
-                break;
-            }
-            else{
-                if(shmptr[i]==1)bill+=30;
-                else if(shmptr[i]==2)bill+=40;
-                else if(shmptr[i]==3)bill+=25;
-                else bill+=30;
-            }
-
+            if (bill==-1) break; 
             i++;
         }
 
-        memset(shmptr,0,SHM_SIZE);
-
-        if(valid == -404){
-            printf("invalid order placed by the customer");
-            shmptr[0]=valid;
-        }
-        else{
-            printf("bill amount sent :%d",bill);
+        if (bill!=-1) {
+            printf("Total bill calculated: %d INR\n", bill);
             shmptr[0]=bill;
+        } else {
+            printf("Invalid orders detected, bill not calculated.\n");
+            shmptr[0]=-404; 
         }
-
-        sleep(20);
-        if(shmptr[0]==500){
-            printf("waiter terminated due to no customers");
-            exit(1);
-        }
+        shmptr[19]=0;
+        break;
+    }
                 
-        if (shmdt(shmptr) == -1) {
+        sleep(1);
+    }
+
+    if (shmdt(shmptr)==-1) {
             perror("error in detaching");
             exit(1);
-        } 
-    }
+        }
 
 }

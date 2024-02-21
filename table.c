@@ -94,132 +94,129 @@ int main(){
     int pipe_handler[MAX_CUSTOMERS][2];
     int customer_pids[MAX_CUSTOMERS];
 
-    while(1){
+    while(1)
+    {
+        int num_of_customers;
+        printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
+        scanf("%d",&num_of_customers);
+        shmptr[0]=8888;
+        shmptr[1]=num_of_customers;
 
-    int num_of_customers;
-    printf("Enter Number of Customers at Table (maximum no. of customers can be 5):");
-    scanf("%d",&num_of_customers);
-
-    shmptr[0]=num_of_customers;
-
-    if(num_of_customers==-1){
-        perror("exitting since the number of customers entered is -1");
-        exit(1);
-    }
-
-
-    display_menu();
-
-    for(int i=0;i<num_of_customers;i++){
-        
-
-        if(pipe(pipe_handler[i]) == -1){
-            perror("Error in creating the pipe");
+        if(num_of_customers==-1){
+            perror("exitting since the number of customers entered is -1");
             exit(1);
         }
 
-        pid_t pid = fork();
-        if(pid == 0){
-            printf("customer %d pid is: %d\n",i+1,getpid());
-            printf("table pid is: %d\n",getppid());
-            customer_order(pipe_handler[i], i + 1,i);
-        }
-        else if(pid > 0){
-            customer_pids[i]=pid;
-            close(pipe_handler[i][WRITE_END]); 
-            // printf("this is parent");
-        }
-        else{
-            perror("Error in forking a process for the customer");
-        }
-        wait(NULL);
 
-    }
+        display_menu();
 
-    int j=1;
-    for (int i=0; i<num_of_customers; i++) {
-        int status;
-        waitpid(customer_pids[i], &status, 0);
-        int order_num;
-        int check= 0;
-        printf("\n Order recieved from Customer %d: ", i + 1);
-        int count=0;
-        
-        
-        while (read(pipe_handler[i][READ_END], &order_num, sizeof(order_num)) > 0 ) {
-            if(order_num!=-1){
-                count=count+1;
-                shmptr[j++]=order_num;
-                printf("%d ", order_num);
-                check = 1;
-                
+        for(int i=0;i<num_of_customers;i++){
+            
+
+            if(pipe(pipe_handler[i]) == -1){
+                perror("Error in creating the pipe");
+                exit(1);
             }
-            // else{
-            //     
-            // }
+
+            pid_t pid = fork();
+            if(pid == 0){
+                printf("customer %d pid is: %d\n",i+1,getpid());
+                printf("table pid is: %d\n",getppid());
+                customer_order(pipe_handler[i], i + 1,i);
+            }
+            else if(pid > 0){
+                customer_pids[i]=pid;
+                close(pipe_handler[i][WRITE_END]); 
+                // printf("this is parent");
+            }
+            else{
+                perror("Error in forking a process for the customer");
+            }
+            wait(NULL);
+
         }
-        if(!check) printf("No order recieved from customer %d",i+1);
-        shmptr[j++]=-1;
+
+        int j=2;
+        for (int i=0; i<num_of_customers; i++) {
+            int status;
+            waitpid(customer_pids[i], &status, 0);
+            int order_num;
+            int check= 0;
+            printf("\n Order recieved from Customer %d: ", i + 1);
+            int count=0;
+            
+            
+            while (read(pipe_handler[i][READ_END], &order_num, sizeof(order_num)) > 0 ) {
+                if(order_num!=-1){
+                    count=count+1;
+                    shmptr[j++]=order_num;
+                    printf("%d ", order_num);
+                    check = 1;
+                    
+                }
+            }
+            if(!check) printf("No order recieved from customer %d",i+1);
+            shmptr[j++]=-1;
+            
+            printf("\n");
+            close(pipe_handler[i][READ_END]);
+        }
+        shmptr[0]=9999;
         
-        printf("\n");
-        close(pipe_handler[i][READ_END]);
-    }
-    shmptr[19]=9999;
-    
 
-    for(int i=0;i<20;i++){
-        printf("%d ",shmptr[i]);
-    }
-
-    printf("MESSAGE STORED\n");
-    sleep(20);
-    printf("<---------------------------------------------------------->\n");
-    printf("Waiting for the bill from the waiter...\n");
-    if(shmptr[0]!= -404){
-        printf("The bill amount is: %d\n",shmptr[0]);
-        printf("\n");
-
-        int *earnings;
-        key_t key;
-        int shmid;
-
-        key = ftok("hotelmanager.c",table_number);
-        shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
-        if(shmid<0){
-            perror("errorin shmget");
-            continue;
+        for(int i=0;i<20;i++){
+            printf("%d ",shmptr[i]);
         }
 
-        earnings = (int *)shmat(shmid,NULL,0);
-        if (earnings==(int *)(-1)) {
-            perror("shmat");
-            continue;
-        }
+        printf("MESSAGE STORED\n");
+        sleep(20);
+        printf("<---------------------------------------------------------->\n");
+        printf("Waiting for the bill from the waiter...\n");
+        if(shmptr[0]!= -404){
+            printf("The bill amount is: %d\n",shmptr[0]);
+            printf("\n");
 
-        earnings[0] = shmptr[0];
+            int *earnings;
+            key_t key;
+            int shmid;
+
+            key = ftok("hotelmanager.c",table_number);
+            shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
+            if(shmid<0){
+                perror("errorin shmget");
+                continue;
+            }
+
+            earnings = (int *)shmat(shmid,NULL,0);
+            if (earnings==(int *)(-1)) {
+                perror("shmat");
+                continue;
+            }
+
+            earnings[0] = shmptr[0];
 
 
-        printf("<------------------order done-------------------->");
-        printf("\n");
-        printf("Do you wish to allot customers again?: ");
-        int answer;
-        scanf("%d",&answer);
-        if(answer==1){
-            continue;
+            printf("<------------------order done-------------------->");
+            printf("\n");
+            printf("Do you wish to allot customers again?: ");
+            int answer;
+            scanf("%d",&answer);
+            if(answer==1){
+                continue;
+            }
+            else{
+                shmptr[0]=500;
+                printf("table terminated since there are no customers");
+                exit(1);
+            }
+        
         }
         else{
-            shmptr[0]=500;
-            printf("table terminated since there are no customers");
-            exit(1);
+            printf("wrong order number placed");
+            //take orders again
+
+
         }
-    
-    }
-    else{
-        printf("wrong order number placed");
-        //take orders again
-
-
-    }
     }
 
 
