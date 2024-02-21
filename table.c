@@ -9,8 +9,11 @@
 #define READ_END 0
 #define WRITE_END 1
 #define MAX_CUSTOMERS 5
+#define MAX_ORDERS 10
+#define SHM_SIZE 1024
 
 int pipe_handler[MAX_CUSTOMERS][2];
+int customer_pids[5]={0};
 
 void display_menu(){
     printf("Menu: \n");
@@ -25,9 +28,10 @@ void display_menu(){
         printf("%s", cuisine);
     }
     fclose(fptr);
+    printf("\n");
 }
 
-void customer_order(int i){
+void customer_order(int i,int *ordersarr){
         if(pipe(pipe_handler[i])==-1){
             perror("Error in creating the pipe");
             exit(1);
@@ -40,15 +44,28 @@ void customer_order(int i){
             //child process
             int order_num;
             printf("table pid is: %d\n",getppid());
-            printf("Enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done: \n");
+            printf("Enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done:");
+            int j=0;
             while(scanf("%d",&order_num)&&order_num!=-1){
-                if(order_num<0 || order_num>4)printf("Please enter a valid order\n");
+                if(order_num<0 || order_num>4){printf("Please enter a valid order\n");continue;}
                 close(pipe_handler[i][READ_END]);
+                
                 write(pipe_handler[i][WRITE_END],&order_num,sizeof(order_num));
+                ordersarr[i]=order_num;
             }
             close(pipe_handler[i][WRITE_END]);
             exit(0);
         }
+
+        else if(pid>0){
+            customer_pids[i]=pid;
+            close(pipe_handler[i][WRITE_END]);
+        }
+
+        else{
+            perror("Error in forking a process for the customer");
+        }
+        printf("\n");
 }
 
 int main(){
@@ -56,8 +73,27 @@ int main(){
     printf("Enter Table Number:");
     scanf("%d",&table_number);
 
+    // ftok to generate unique key for shared memory
+    key_t key=ftok("table.c",table_number);
+    if(key==-1){
+        printf("error in ftok\n");
+        return 1;
+    }
+
+    int shmid=shmget(key, 1024, 0666 | IPC_CREAT);
+    if(shmid<0){
+        perror("shmget error");
+        exit(1);
+    }
+
+    int *shmptr=(int *)shmat(shmid, (void*)0, 0);
+    if(shmptr==(int *)(-1)){
+        perror("shmptr error");
+        exit(1);
+    }
+    memset(shmptr,0,SHM_SIZE);
+
     //asking the number of customers
-    
     int num_of_customers;
     printf("Enter Number of Customers at Table (maximum no. of customers can be 5):");
     scanf("%d",&num_of_customers);
@@ -68,39 +104,45 @@ int main(){
     display_menu();
 
     //creating customer processes and seperate pipe for customer and table process
-
-    // for(int i=0;i<num_of_customers;i++){
-    //     if(pipe(pipe_handler[i])==-1){
-    //         perror("Error in creating the pipe");
-    //         exit(1);
-    //     }
-
-    //     //creating a process
-    //     pid_t pid = fork();
-
-    //     if(pid == 0){
-    //         //child process
-    //         int order_num;
-    //         printf("Enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done: \n");
-    //         while(scanf("%d",&order_num)&&order_num!=-1){
-    //             close(pipe_handler[i][READ_END]);
-    //             write(pipe_handler[i][WRITE_END],&order_num,sizeof(order_num));
-    //         }
-    //         close(pipe_handler[i][WRITE_END]);
-    //         // exit(0);
-    //     }
-    //     else if(pid > 0){
-    //         //parent proces
-
-    //     }
-    //     else{
-    //         // perror("Error in forking a process for %dth customer on %dth table",i,table_number);
-    //         perror("Error in forking a process\n");
-    //     } 
-    // }
-
     for(int i=0;i<num_of_customers;i++){
-        customer_order(i);
+        customer_order(i,shmptr);
         wait(NULL);
+    }
+
+    int j=2;
+    shmptr[0]=num_of_customers;
+    for (int i=0; i<num_of_customers; i++) {
+        int status;
+        waitpid(customer_pids[i], &status, 0);
+        int order_num;
+        int check= 0;
+        printf("\nOrder recieved from Customer %d: ", i + 1);
+
+        while (read(pipe_handler[i][READ_END], &order_num, sizeof(order_num)) > 0 ) {
+            if(order_num!=-1){
+                printf("%d ", order_num);
+                shmptr[j++]=order_num;
+                check = 1;
+            }
+        }
+        shmptr[1]=j-2;
+        if(!check) printf("No order recieved from customer %d",i+1);
+        printf("\n");
+        close(pipe_handler[i][READ_END]);
+    }
+
+    printf("\nOrders for Table %d:received\n", table_number);
+    
+    printf("MESSAGE STORED\n");
+    printf("<---------------------------------------------------------->\n");
+    printf("Waiting for the bill from the waiter...\n");
+    for(int i=0;i<shmptr[1]+2;i++){
+        printf("%d ",shmptr[i]);
+    }
+    printf("\n");
+    sleep(10);
+    if(shmptr[0]!= -404)printf("The bill amount is: %d INR\n",shmptr[0]);
+    else {
+        // take order from customer again
     }
 }
