@@ -78,12 +78,16 @@ int main(){
         perror("shmat");
         exit(1);
     }
-    shmptr[100]=8888;
+    //shmptr[100]=8888;
+    memset(shmptr_hotel,0,SHM_SIZE);
 
 
 while (1) {
+    // printf("check1\n");
     if(shmptr[19]==2222){
         shmptr_hotel[19]=2222;
+        printf("Message from table: \nno customers in this table, passing the message to hotel manager\n");
+        exit(1);
     }
     if (shmptr[19]==9999) {
         printf("Processing orders...\n");
@@ -127,6 +131,9 @@ while (1) {
         
 
         
+    }
+    else{
+        //nothing
     }
                 
         sleep(1);

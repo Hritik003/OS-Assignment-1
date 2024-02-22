@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "enabled",
     "files.associations": {
-        "wait.h": "c"
+        "wait.h": "c",
+        "string.h": "c"
     }
 }

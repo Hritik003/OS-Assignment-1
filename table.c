@@ -100,7 +100,14 @@ int main(){
         printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
         scanf("%d",&num_of_customers);
         if(num_of_customers==0){
-            shmptr[19]==2222;
+            shmptr[19]=2222;
+            printf("Number of customers are 0 ,passing this message to waiter\n");
+    
+            if (shmdt(shmptr) == -1) {
+                perror("shmdt failed");
+            }
+            
+            exit(1);
         }
         shmptr[19]=8888;
         shmptr[0]=num_of_customers;
