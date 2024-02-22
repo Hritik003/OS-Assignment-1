@@ -30,13 +30,6 @@ int main(){
     }
 
     while(1){
-        if(strcmp(shmptr,"0_CUSTOMERS IN ALL THE TABLES") == 0) {
-            memset(shmptr,0,SHM_SIZE);
-            strcpy(shmptr,"CLOSE");
-            printf("Message sent to hotel manager to terminate\n");
-            printf("Admin process terminated due to 0 customers\n");
-            break;
-        }
         printf("Do you want to close the hotel? Enter Y for Yes and N for No.\n");
         char answer;
         scanf(" %c",&answer);

@@ -99,7 +99,7 @@ int main(){
         int num_of_customers;
         printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
         scanf("%d",&num_of_customers);
-        if(num_of_customers==0){
+        if(num_of_customers==-1){
             shmptr[19]=2222;
             printf("Number of customers are 0 ,passing this message to waiter\n");
     
@@ -112,17 +112,10 @@ int main(){
         shmptr[19]=8888;
         shmptr[0]=num_of_customers;
 
-        if(num_of_customers==-1){
-            perror("exitting since the number of customers entered is -1");
-            exit(1);
-        }
-
-
         display_menu();
 
         wrong_order:
         for(int i=0;i<num_of_customers;i++){
-            
 
             if(pipe(pipe_handler[i]) == -1){
                 perror("Error in creating the pipe");

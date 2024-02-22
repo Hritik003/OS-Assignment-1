@@ -55,17 +55,16 @@ int main(){
 
     while(!last_round)
     {
-        if(tables==zero_cust_tables){
+        if(tables==zero_cust_tables && strcmp(termination_shmptr, "CLOSE") == 0){
             printf("check1");
-            memset(termination_shmptr,0,SHM_SIZE);
-            strcpy(termination_shmptr,"0_CUSTOMERS IN ALL THE TABLES");
-            sleep(10);
-
-            if(strcmp(termination_shmptr, "CLOSE") == 0){
-                printf("Message from admin to close since 0 customers\n");
-                last_round=1;
-                break;
-            }
+            // memset(termination_shmptr,0,SHM_SIZE);
+            // strcpy(termination_shmptr,"0_CUSTOMERS IN ALL THE TABLES");
+            printf("Instruction sent by admin: CLOSE\n");
+            printf("\n");
+            
+            printf("Message from admin to close since 0 customers\n");
+            sleep(3);
+            break;
             
         }
         
@@ -90,10 +89,12 @@ int main(){
             }
 
             if(earnings[19]==2222){
-                zero_cust_tables=zero_cust_tables+1;
+                zero_cust_tables++;
                 printf("message recieved from waiter %d: \n",i);
                 printf("0 customers in waiter %d\n",i);
-                memset(earnings,0,SHM_SIZE);
+
+                earnings[19]=9999;
+                last_round=1;
                 
             }
             if(strcmp(termination_shmptr, "CLOSE") == 0){
