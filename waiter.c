@@ -53,14 +53,14 @@ int main(){
     int *shmptr_hotel;
     
     shmid = shmget(key, SHM_SIZE, 0666);
-    printf("Shared memory segment for the table-waiter: %d ",shmid);
+    printf("Shared memory segment for the table-waiter: %d \n",shmid);
      if (shmid<0) {
         perror("shmget");
         exit(1);
     }
 
     shmid_hotel = shmget(key_hotel, SHM_SIZE, 0666);
-    printf("Shared memory segment for the hotel-waiter: %d ",shmid_hotel);
+    printf("Shared memory segment for the hotel-waiter: %d \n",shmid_hotel);
      if (shmid_hotel<0) {
         perror("shmget");
         exit(1);
@@ -78,9 +78,13 @@ int main(){
         perror("shmat");
         exit(1);
     }
+    shmptr[100]=8888;
 
 
 while (1) {
+    if(shmptr[19]==2222){
+        shmptr_hotel[19]=2222;
+    }
     if (shmptr[19]==9999) {
         printf("Processing orders...\n");
         int bill=0;
@@ -111,6 +115,9 @@ while (1) {
         if (bill!=-1) {
             printf("Total bill calculated: %d INR\n", bill);
             shmptr[0]=bill;
+            shmptr_hotel[0]=bill;
+            shmptr_hotel[19]=9999;
+            
         } else {
             printf("Invalid orders detected, bill not calculated.\n");
             shmptr[0]=-404; 

@@ -32,7 +32,7 @@ int main(){
 
     key_t termination_key = ftok("admin.c",'A');
     int termination_shmid = shmget(termination_key,SHM_SIZE,0666);
-    printf("%d",termination_shmid);
+    printf("shared memory id for hotel-admin: %d\n",termination_shmid);
     if(termination_shmid<0){
         perror("error at termination shm");
         exit(1);
@@ -48,43 +48,71 @@ int main(){
 
     int closed =0;
 
+    int last_round=0;
 
-    for(int i=1;i<=tables;i++){
-
-        int *earnings;
-        key_t key;
-        int shmid;
-
-        key = ftok("hotelmanager.c",i);
-        shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
-        if(shmid<0){
-            perror("errorin shmget");
-            continue;
-        }
-
-        earnings = (int *)shmat(shmid,NULL,0);
-        if (earnings==(int *)(-1)) {
-            perror("shmat");
-            continue;
-        }
-
-        while(*earnings==0 && strcmp(termination_shmptr, "CLOSE") != 0){
-            sleep(1);
-        }
-
-        if(strcmp(termination_shmptr, "CLOSE") == 0){
-            closed=1;
-        }
-
-        fprintf(fptr,"Earning from Table %d: %.2f INR\n", i, earnings[0]);
-        t_earnings+= earnings[0];
+    while(!last_round)
+    {
         
-        shmdt(earnings);
-        if(closed){
-            shmctl(shmid, IPC_RMID, NULL);
+        for(int i=1;i<=tables;i++)
+        {
+            int *earnings;
+            key_t key;
+            int shmid;
+
+            key = ftok("hotelmanager.c",i);
+            shmid = shmget(key, SHM_SIZE, 0666 | IPC_CREAT);
+            //printf("shared memory id for waiter-hotel: %d\n",shmid);
+            if(shmid<0){
+                perror("errorin shmget");
+                continue;
+            }
+
+            earnings = (int *)shmat(shmid,NULL,0);
+            if (earnings==(int *)(-1)) {
+                perror("shmat");
+                continue;
+            }
+
+            if(earnings[19]=2222){
+                memset(termination_shmptr,0,SHM_SIZE);
+                strcpy(termination_shmptr,"0_CUSTOMERS");
+                sleep(5);
+
+                if(termination_shmptr=="CLOSE"){
+                    printf("Message from admin to close since 0 customers\n");
+                    last_round=1;
+                }
+            }
+            if(strcmp(termination_shmptr, "CLOSE") == 0){
+                    //if last round send intruction to tables
+                    printf("Instruction sent by admin: CLOSE\n");
+                    printf("\n");
+                    printf("Instruction to waiters: \n");
+                    printf("-----------------last round of customers-----------------\n");
+                    last_round=1;
+                    break;
+                }
+            if(earnings[19]==9999){
+                earnings[19]=8888;
+
+                if(earnings[0]!=0){
+                    fprintf(fptr,"Earning from Table %d: %.2f INR\n", i, earnings[0]);
+                    printf("Earnings from table %d recieved: %.2d\n",i,earnings[0]);
+                    t_earnings+= earnings[0];
+
+                }       
+            }
+            if (earnings != (int *)(-1)) {
+                if (shmdt(earnings) == -1) {
+                    perror("shmdt failed");
+                    // Handle error appropriately
+                }
+            }
         }
-        
-    }
+}
+                    
+            
+
     float profit=0.0;
     float wages=0.0;
 

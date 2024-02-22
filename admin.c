@@ -17,7 +17,7 @@ int main(){
 
     int shmid;
     shmid = shmget(key,SHM_SIZE,0666 | IPC_CREAT);
-    printf("%d",shmid);
+    printf("shared memory id for admin-hotel: %d\n",shmid);
     if(shmid<0){
         perror("error in shmget");
         exit(1);
@@ -30,6 +30,13 @@ int main(){
     }
 
     while(1){
+        if(shmptr=="0_CUSTOMERS"){
+            memset(shmptr,0,SHM_SIZE);
+            strcpy(shmptr,"CLOSE");
+            printf("message sent to hotel manager to terminat\n");
+            printf("Admin process terminated due to 0 customers");
+            break;
+        }
         printf("Do you want to close the hotel? Enter Y for Yes and N for No.\n");
         char answer;
         scanf(" %c",&answer);
