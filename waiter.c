@@ -30,18 +30,38 @@ int main(){
 
     //printf("Check 0");
     //shm segment
-    key_t key = ftok("table.c",waiter_id);
+
+    
+    key_t key = ftok("table.c",waiter_id);//for table
+    key_t key_hotel = ftok("hotelmanager.c",waiter_id);//for hotelmanager
+
+
     if(key==-1){
+        printf("error in ftok");
+        return 1;
+    }
+
+    if(key_hotel==-1){
         printf("error in ftok");
         return 1;
     }
 
     int shmid;
     int *shmptr;
+
+    int shmid_hotel;
+    int *shmptr_hotel;
     
     shmid = shmget(key, SHM_SIZE, 0666);
-    printf("%d ",shmid);
+    printf("Shared memory segment for the table-waiter: %d ",shmid);
      if (shmid<0) {
+        perror("shmget");
+        exit(1);
+    }
+
+    shmid_hotel = shmget(key_hotel, SHM_SIZE, 0666);
+    printf("Shared memory segment for the hotel-waiter: %d ",shmid_hotel);
+     if (shmid_hotel<0) {
         perror("shmget");
         exit(1);
     }
@@ -49,6 +69,12 @@ int main(){
 
     shmptr = shmat(shmid, NULL, 0);
     if (shmptr== NULL) {
+        perror("shmat");
+        exit(1);
+    }
+
+    shmptr_hotel = shmat(shmid_hotel, NULL, 0);
+    if (shmptr_hotel== NULL) {
         perror("shmat");
         exit(1);
     }
@@ -89,7 +115,7 @@ while (1) {
             printf("Invalid orders detected, bill not calculated.\n");
             shmptr[0]=-404; 
         }
-        shmptr[19]=8000;
+        shmptr[19]=8888;
         
         
 

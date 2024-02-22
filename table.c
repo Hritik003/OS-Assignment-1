@@ -110,6 +110,7 @@ int main(){
 
         display_menu();
 
+        wrong_order:
         for(int i=0;i<num_of_customers;i++){
             
 
@@ -169,10 +170,11 @@ int main(){
         }
 
         printf("MESSAGE STORED\n");
-        sleep(20);
+        sleep(5);
         printf("<---------------------------------------------------------->\n");
         printf("Waiting for the bill from the waiter...\n");
         if(shmptr[0]!= -404){
+
             printf("The bill amount is: %d\n",shmptr[0]);
             printf("\n");
 
@@ -212,8 +214,9 @@ int main(){
         
         }
         else{
+            shmptr[0]=num_of_customers;
             printf("wrong order number placed \n");
-            //take orders again
+            goto wrong_order;
 
 
         }
