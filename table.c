@@ -6,8 +6,6 @@
 #include <sys/ipc.h>
 #include <string.h>
 
-
-
 #define READ_END 0
 #define WRITE_END 1
 #define MAX_CUSTOMERS 5
@@ -41,7 +39,6 @@ void customer_order(int pipe_handler[], int customer_id, int i){
     int j=0;
     int count_of_orders=0;
     
-    
     printf("Customer %d, enter the serial number(s) of the item(s) to order from the menu. Enter -1 when done:\n", customer_id);
     
     while(1){
@@ -59,8 +56,6 @@ void customer_order(int pipe_handler[], int customer_id, int i){
     close(pipe_handler[WRITE_END]);
     exit(0);
 }
-
-
 
 int main(){
     int table_number;
@@ -93,12 +88,22 @@ int main(){
 
     int pipe_handler[MAX_CUSTOMERS][2];
     int customer_pids[MAX_CUSTOMERS];
+    int wrong_order=0;
+    int num_of_customers;
 
     while(1)
     {
-        int num_of_customers;
-        printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
-        scanf("%d",&num_of_customers);
+        if(wrong_order==1){
+            printf("\n");
+            printf("<---------------------Taking orders again------------------->\n");
+            printf("\n");
+
+        }
+        else{
+            printf("Enter Number of Customers at Table (maximum no. of customers can be 5):\n");
+            scanf("%d",&num_of_customers);
+        }
+        
         if(num_of_customers==-1){
             shmptr[19]=2222;
             printf("Number of customers are 0 ,passing this message to waiter\n");
@@ -106,7 +111,6 @@ int main(){
             if (shmdt(shmptr) == -1) {
                 perror("shmdt failed");
             }
-            
             exit(1);
         }
         shmptr[19]=8888;
@@ -203,9 +207,26 @@ int main(){
 
             printf("<------------------order done-------------------->");
             printf("\n");
+            if(shmptr[200]==911){//1111 comes from admin close message
+                printf("<-------------------MESSAGE FROM WAITER----------------------->\n");
+                printf("\n");
+                printf("Admin has instructed to close\n");
+                printf("\n");
+                printf("<------------------------------------------------------------->\n");
+                printf("closing this table");
+                memset(shmptr,0,SHM_SIZE);
+                shmptr[0]=911;
+                exit(1);
+            } 
             printf("Do you wish to allot customers again?: ");
             int answer;
             scanf("%d",&answer);
+            if(shmptr[200]==911){//1111 comes from admin close message
+                printf("closing this table");
+                memset(shmptr,0,SHM_SIZE);
+                shmptr[0]=911;
+                exit(1);
+            } 
             if(answer==1){
                 continue;
             }
@@ -219,8 +240,7 @@ int main(){
         else{
             shmptr[0]=num_of_customers;
             printf("wrong order number placed \n");
-            goto wrong_order;
-
+            wrong_order=1;
 
         }
     }
