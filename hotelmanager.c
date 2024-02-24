@@ -105,6 +105,7 @@ int main(){
                 printf("\n");
                 printf("Message from admin to close since 0 customers\n");
                 sleep(1);
+                last_round=1;
                 break;
                 
             }
