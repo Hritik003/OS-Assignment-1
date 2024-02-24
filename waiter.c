@@ -25,24 +25,22 @@ void calculate_bill(int *shmptr,int *shmptr_hotel){
         printf("Processing orders...\n");
         int bill=0;
         int i=1;
-        while (shmptr[i]!=-1) { 
+        while (shmptr[i]) { 
+            if(shmptr[i]==-1){
+                i++;
+                continue;
+            }
             switch (shmptr[i]) {
                 case 1:
-                    bill+=30;
-                    break;
+                    bill+=30;printf("current bill is: %d \n",bill);break;
                 case 2:
-                    bill+=40;
-                    break;
+                    bill+=40;printf("current bill is: %d \n",bill);break;
                 case 3:
-                    bill+=25;
-                    break;
+                    bill+=25;printf("current bill is: %d \n",bill);break;
                 case 4:
-                    bill+=30; 
-                    break;
+                    bill+=30; printf("current bill is: %d \n",bill);break;
                 default:
-                    printf("Invalid order number: %d\n", shmptr[i]);
-                    bill=-1; 
-                    break;
+                    printf("Invalid order number: %d\n", shmptr[i]);bill=-1;break;
             }
             if (bill==-1) break; 
             i++;
@@ -139,7 +137,7 @@ int main(){
     memset(shmptr_hotel,0,SHM_SIZE);
 
 while (1) {
-    
+
         if(shmptr[19]==2222){
             shmptr_hotel[19]=2222;
             printf("Message from table: \nno customers in this table, passing the message to hotel manager\n");
