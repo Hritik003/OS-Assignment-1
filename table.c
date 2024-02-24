@@ -177,9 +177,9 @@ int main(){
         }
 
         printf("MESSAGE STORED\n");
-        sleep(5);
         printf("<---------------------------------------------------------->\n");
         printf("Waiting for the bill from the waiter...\n");
+        sleep(2);
         if(shmptr[0]!= -404){
 
             printf("The bill amount is: %d\n",shmptr[0]);
@@ -231,7 +231,7 @@ int main(){
                 continue;
             }
             else{
-                shmptr[0]=500;
+                shmptr[19]=2222;
                 printf("table terminated since there are no customers");
                 exit(1);
             }

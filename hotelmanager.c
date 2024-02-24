@@ -92,9 +92,20 @@ int main(){
                 zero_cust_tables++;
                 printf("message recieved from waiter %d: \n",i);
                 printf("0 customers in waiter %d\n",i);
-
-                earnings[19]=9999;
-                last_round=1;
+                
+                earnings[19]=1111;//sending back to waiter
+                sleep(3);
+                // last_round=1;
+                
+            }
+            if(tables==zero_cust_tables && strcmp(termination_shmptr, "CLOSE") == 0){
+                printf("<------------------------------------------------->\n");
+                printf("\n");
+                printf("Instruction sent by admin: CLOSE\n");
+                printf("\n");
+                printf("Message from admin to close since 0 customers\n");
+                sleep(1);
+                break;
                 
             }
             if(strcmp(termination_shmptr, "CLOSE") == 0){
@@ -103,15 +114,21 @@ int main(){
                     printf("\n");
                     printf("Instruction to waiters: \n");
                     printf("-----------------last round of customers-----------------\n");
+                    printf("\n");
                     last_round=1;
-                    break;
+                    earnings[0]=911;
+                    
+                    sleep(1);
+                    while(earnings[200]!=911){
+                        continue;
+                    }
                 }
             if(earnings[19]==9999){
                 earnings[19]=8888;
 
                 if(earnings[0]!=0){
-                    fprintf(fptr,"Earning from Table %d: %.2f INR\n", i, earnings[0]);
-                    printf("Earnings from table %d recieved: %.2d\n",i,earnings[0]);
+                    fprintf(fptr,"Earnings from Table %d: %.2d INR\n", i, earnings[0]);
+                    printf("Earnings from table %d recieved: %.2d INR\n",i,earnings[0]);
                     t_earnings+= earnings[0];
 
                 }       

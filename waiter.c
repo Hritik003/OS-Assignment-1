@@ -50,9 +50,6 @@ void calculate_bill(int *shmptr,int *shmptr_hotel){
             shmptr[0]=bill;
             shmptr_hotel[0]=bill;
             shmptr_hotel[19]=9999;
-            
-            
-            
         }
          else {
             printf("Invalid orders detected, bill not calculated.\n");
