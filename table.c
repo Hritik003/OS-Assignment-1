@@ -91,25 +91,27 @@ void customer_create(int *shmptr,int table_number,int num_of_customers){
                 check = 1;
             }
         }
-        shmptr[1]=j-3;
-        shmptr[2]=1;
+        // shmptr[1]=j-3;
+        // shmptr[2]=1;
         if(!check) printf("No order recieved from customer %d",i+1);
         printf("\n");
         close(pipe_handler[i][READ_END]);
     }
+    shmptr[1]=j-3;
+    shmptr[2]=1;
     printf("\nOrders for Table %d:received\n", table_number);
     
     printf("MESSAGE STORED\n");
     printf("<---------------------------------------------------------->\n");
     printf("Waiting for the bill from the waiter...\n");
     
+    sleep(20);
     printf("shm status: ");
     for(int i=0;i<shmptr[1]+3;i++){
         printf("%d ",shmptr[i]);
     }
     printf("\n");
-    sleep(20);
-    if(shmptr[2]!=0)printf("The bill amount is: %d INR\n",shmptr[0]);
+    if(shmptr[1]!=100)printf("The bill amount is: %d INR\n",shmptr[0]);
     else {
         // take order from customer again
         printf("\nInvalid order! Please enter again.\n");
@@ -122,15 +124,6 @@ int main(){
     int table_number;
     printf("Enter Table Number:");
     scanf("%d",&table_number);
-
-    //asking the number of customers
-    int num_of_customers;
-    printf("Enter Number of Customers at Table (maximum no. of customers can be 5):");
-    scanf("%d",&num_of_customers);
-    if(num_of_customers==-1)return 0;//exit
-
-    //displaying the contents of the menu
-    display_menu();
 
     // ftok to generate unique key for shared memory
     key_t key=ftok("table.c",table_number);
@@ -151,9 +144,32 @@ int main(){
         exit(1);
     }
     memset(shmptr,0,SHM_SIZE);
-    customer_create(shmptr,table_number,num_of_customers);
-    
-    memset(shmptr,0,SHM_SIZE);
+
+    while(1){
+        //asking the number of customers
+        int num_of_customers;
+        printf("Enter Number of Customers at Table (maximum no. of customers can be 5):");
+        scanf("%d",&num_of_customers);
+        if(num_of_customers==-1)return 0;//exit
+
+        //displaying the contents of the menu
+        display_menu();
+
+        customer_create(shmptr,table_number,num_of_customers);
+        
+        memset(shmptr,0,SHM_SIZE);
+
+        printf("Do you wish to seat a new set of customers?(Enter 'Y' or 'N')...........");
+        char ch;
+        scanf("%c",&ch);
+        if(ch=='Y'){
+            // shmptr[0]=101;
+            shmptr[2]=0;
+            continue;
+        }
+        else if(ch=='N'){shmptr[0]=102;break;}
+    }
+
     shmdt(shmptr);
     shmctl(shmid,IPC_RMID,NULL);
 
