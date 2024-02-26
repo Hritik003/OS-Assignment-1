@@ -53,6 +53,7 @@ void calculate_bill(int *shmptr,int *shmptr_hotel){
         }
          else {
             printf("Invalid orders detected, bill not calculated.\n");
+            memset(shmptr,0,SHM_SIZE);
             shmptr[0]=-404; 
         }
         shmptr[19]=8888;
