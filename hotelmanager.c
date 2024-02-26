@@ -55,18 +55,7 @@ int main(){
 
     while(!last_round)
     {
-        if(tables==zero_cust_tables && strcmp(termination_shmptr, "CLOSE") == 0){
-            printf("check1");
-            // memset(termination_shmptr,0,SHM_SIZE);
-            // strcpy(termination_shmptr,"0_CUSTOMERS IN ALL THE TABLES");
-            printf("Instruction sent by admin: CLOSE\n");
-            printf("\n");
-            
-            printf("Message from admin to close since 0 customers\n");
-            sleep(3);
-            break;
-            
-        }
+        
         
         for(int i=1;i<=tables;i++)
         {

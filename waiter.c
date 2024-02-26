@@ -74,8 +74,9 @@ void admin_Instructed_close(int *shmptr,int *shmptr_hotel){
             }
             continue;
         }
-        shmptr_hotel[200]=911;
         printf("Terminating waiter, since Admin is closed");
+        shmptr_hotel[200]=911;
+        
         
 }
 
