@@ -37,13 +37,14 @@ void create_waitershmptrs(int tables,int *waiter_shmptr_arr[],int waiter_shmid_a
         *waiter_shmptr=0;
         waiter_shmptr_arr[i]=waiter_shmptr;
         waiter_shmid_arr[i]=waiter_shmid;
-        printf("Hello life %d %d\n",*(waiter_shmptr_arr[i]),waiter_shmid_arr[i]);
+        printf("SHM ptr and ID created with waiter: %d %d\n",*(waiter_shmptr_arr[i]),waiter_shmid_arr[i]);
     }
 }
 
 void clear_waitershmptrs(int tables,int *waiter_shmptr_arr[MAX_CUSTOMERS+1],int waiter_shmid_arr[MAX_CUSTOMERS+1]){
     for(int i=1;i<=tables;i++){
-        memset(waiter_shmptr_arr[i],0,SHM_SIZE);
+        // memset(waiter_shmptr_arr[i],0,SHM_SIZE);
+        *waiter_shmptr_arr[i]=0;
         shmdt(waiter_shmptr_arr[i]);
         shmctl(waiter_shmid_arr[i],IPC_RMID,NULL);
     }
@@ -103,8 +104,10 @@ int main(){
         exit(1);
     }
 
-    while(1){
-        create_waitershmptrs(tables,waiter_shmptr_arr,waiter_shmid_arr);
+    create_waitershmptrs(tables,waiter_shmptr_arr,waiter_shmid_arr);
+    while(*termination_shmptr!='Y'){
+        // printf("New set of customers!\n");
+        // create_waitershmptrs(tables,waiter_shmptr_arr,waiter_shmid_arr);
         
         int all_order_taken=0;
         while(!all_order_taken){
@@ -132,12 +135,16 @@ int main(){
         //         }
         //     }
         // }
-        clear_waitershmptrs(tables,waiter_shmptr_arr,waiter_shmid_arr);
-        if(*termination_shmptr!='Y')break;
-        else{
-            printf("New set of customers!\n");
-        }
+        // clear_waitershmptrs(tables,waiter_shmptr_arr,waiter_shmid_arr);
+        
+        if(*termination_shmptr=='Y'){printf("The current ones are the last round of customers\n");}
+        // sleep(10);
+        // else{
+        //     printf("New set of customers!\n");
+        // }
     }
+    printf("Termination Instruction received from the admin\n");
+    printf("<---------------------------CALCULATING THE INCOME, EXPENSES AND PROFIT--------------------------->");
 
     /**---------------------------------CHECK HOTEL CLOSING CALL AND CALCULATE PROFIT---------------------------------*/
     calculate_profit(fptr,t_earnings);
