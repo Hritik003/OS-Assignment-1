@@ -151,6 +151,9 @@ int main(){
 
     printf("Thank you for visiting the Hotel!\n");
 
+    shmdt(termination_shmptr);
+    shmctl(termination_shmid,IPC_RMID,NULL);
+
     return 0;
 
 }
