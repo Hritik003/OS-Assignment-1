@@ -168,4 +168,5 @@ while (1) {
             }
         }
     }
+    shmctl(shmid,IPC_RMID,NULL);
 }
